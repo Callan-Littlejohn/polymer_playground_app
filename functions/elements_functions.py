@@ -27,7 +27,7 @@ import numpy as np
 import itertools
 import math
 
-elementsfile="C:/Users/FTICR_Kool_Kidz_PC/Downloads/isotopes_acurate.xlsx"
+elementsfile="isotopes_acurate.xlsx"
 
 c13= 13.0033548
 c13diff=c13-12
