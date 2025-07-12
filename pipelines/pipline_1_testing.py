@@ -1,8 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr 15 11:12:21 2025
+----License----
 
-@author: FTICR_Kool_Kidz_PC
+Copyright Ó 2025  Callan Littlejohn,  Peter O'Connor, and The University of Warwick
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or  any later version. You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+For more details, see the GNU General Public License.
+
+ 
+
+----Notes----
+
+This software was produced by Callan Littlejohn as a Research fellow at the University of Warwick. It is intended to make the processing and analysis of polymer MS data data simpler and faster.
+
+
+@author: Callan Littlejohn
 """
 
 from functions import fileio
