@@ -36,6 +36,7 @@ import scipy.signal
 import matplotlib
 import time
 from matplotlib.figure import Figure
+import os
 
 class gui():
     def __init__(self):
@@ -116,6 +117,9 @@ class gui():
         analysebutt=ttk.Button(self.targettab,text="analyse",command=self.analyse).grid(row=4,column=0,columnspan=2,sticky="NSEW")
         
         
+        #saving
+        savebutton=ttk.Button(self.savetab,text="save assignment table",command=self.save_assingments).grid(row=0,column=0,columnspan=3,sticky="NSEW")
+        
         sv_ttk.set_theme("dark")
         self.mainscreen.mainloop()
         
@@ -142,6 +146,7 @@ class gui():
         repeat_unit=self.monomerentry.get()
         charge=int(self.zentry.get())
         mmd,rmmd, spectra, mmdpeaks,assignments=pipelines.pipline_1_testing.pipeline1(self.infile,expected_endgroups,expected_adducts,repeat_unit,charge)
+        self.assignments=assignments
         slabels, smasses,sints=sort_by_labels(assignments, expected_adducts, expected_endgroups)#print(assignments)
         mmdpeaksx,mmdpeaksy=line_up_mmd_peaks(mmd[0],mmd[1],smasses, repeat_unit)
         size=1
@@ -230,6 +235,15 @@ class gui():
         self.mmdprocanvas.get_tk_widget().pack(fill=tk.BOTH,expand=True)
         self.mmdprotoolbar=NavigationToolbar2Tk(self.mmdprocanvas,self.mmdprotab)
         self.mmdprocanvas.get_tk_widget().pack(fill=tk.BOTH,expand=True)
+    def save_assingments(self):
+        outfile=tk.filedialog.asksaveasfilename()
+        os.mkdir(outfile)
+        self.mmdprofig.savefig(outfile+"/MMD_pro.png",dpi=300)
+        self.mmdfig.savefig(outfile+"/MMD.png",dpi=300)
+        self.specfig.savefig(outfile+"/spectrum.png",dpi=300)
+        #outfileass=outfile+"/assignment_table.xlsx"
+        make_assignment_table(outfile+"/assignment_table.xlsx", self.assignments)
+        
         
 def sort_by_labels(assignments,expected_adducts,expected_endgroups):
     assignmentst=np.transpose(assignments)
@@ -276,4 +290,9 @@ def line_up_mmd_peaks(x,y,sorted_peaks,repeat_unit):
         mmdlocs.append(tempx)
         mmdheights.append(tempy)
     return mmdlocs,mmdheights
+def make_assignment_table(outfile, assignments):
+    ass=np.transpose(assignments)
+    data={"label":ass[3],"theoretical mass": ass[2],"charge":ass[5],"observed mass":ass[0],"intensity":ass[1],"mass error":ass[4]}
+    df=pd.DataFrame(data)
+    df.to_excel(outfile)
 a=gui()
