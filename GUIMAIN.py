@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import tkinter as tk
 import pandas as pd
-import pipelines.pipline_1_testing
+import pipelines.pipeline_1
 import pipelines.pipeline_2
 import matplotlib.pyplot as plot
 from matplotlib.gridspec import GridSpec
@@ -241,8 +241,8 @@ class gui():
         elements=self.formsentry.get()
         mins=self.minsentry.get()
         maxs=self.maxsentry.get()
-        minsarray=mins.split(" ")
-        maxsarray=maxs.split(" ")
+        minsarray=mins.split(",")
+        maxsarray=maxs.split(",")
         for i in range(len(maxsarray)):
             maxsarray[i]=int(maxsarray[i])
             minsarray[i]=int(minsarray[i])
@@ -266,7 +266,7 @@ class gui():
         expected_endgroups=self.egentry.get().split(",")
         repeat_unit=self.monomerentry.get()
         charge=int(self.zentry.get())
-        mmd,rmmd, spectra, mmdpeaks,assignments=pipelines.pipline_1_testing.pipeline1(self.infile,expected_endgroups,expected_adducts,repeat_unit,charge)
+        mmd,rmmd, spectra, mmdpeaks,assignments=pipelines.pipeline_1.pipeline2(self.infile,expected_endgroups,expected_adducts,repeat_unit,charge,1.5)
         self.assignments=assignments
         if len(self.assignments)==0:
             ttk.ok("no peaks found",title="error")
