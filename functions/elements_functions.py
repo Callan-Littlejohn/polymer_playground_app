@@ -90,6 +90,9 @@ def formula_to_mass(formula_ui):
 
 def decharge(mz,z):
     m= np.multiply(mz,z)
+    es=np.multiply(z,emass)
+    m=np.add(m, es)
+    # m=np.round(m,decimals=6)
     for i in range(len(m)):
         m[i]=round(m[i],6)
     return m
@@ -170,6 +173,15 @@ def exact_mass_calculator(masses, adducts, additional_el,max_charge,refmass,cent
                                    assigned_formula.append("C"+str(C)+"H"+str(H)+"N"+str(N)+"O"+str(O))
                                    mes.append(masserror_at_range(closest, mass, center))
     return masses_assigned,assigned_formula,mes
+
+def ret_mass_diffs():
+    mds=[]
+    for i in elements:
+        m=elements[i]
+        md=m-math.floor(m)
+        mds.append([i,md])
+    return mds
+
 
 
 mds=[]

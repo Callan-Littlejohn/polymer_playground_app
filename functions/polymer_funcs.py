@@ -130,7 +130,7 @@ def get_peaks_in_projection(xaxis,yaxis,height=3):
     widtheitherway=int(width/2)
     widtheitherway=30
     moi,intens=[],[]
-    print(peaks)
+    #print(peaks)
     for i in peaks:
         if i>width and i<10000-widtheitherway:
             try:
@@ -146,4 +146,38 @@ def get_peaks_in_projection(xaxis,yaxis,height=3):
                 #plot.show()
                 
     return moi,intens
+
+def gen_mmdpro_optimised(mz, refmass):
+    xax = np.linspace(0, refmass, 10001)
+    yaxis = np.zeros(10001)
+    mmds = np.mod(mz, refmass)
+    ppmwidths = mz / 1e6
     
+    sqrt_2pi = np.sqrt(2 * np.pi)
+    
+    for i in range(len(mz)):
+        diff = xax - mmds[i]
+        exponent = -0.5 * (diff / ppmwidths[i])**2
+        gaussian = np.exp(exponent) / (sqrt_2pi * ppmwidths[i])
+        gaussian /= np.max(gaussian)
+        yaxis += gaussian
+    
+    return xax, yaxis
+
+def getidscore(mz,i,refmass):
+    xax,yax=gen_mmdpro_optimised(mz,  refmass)
+    #plot.plot(xax,yax)
+    #plot.xlim(61.8,62)
+    # yax=np.sort(yax)
+    # minx=np.argmin(np.abs(np.subtract(yax,3.0)))
+    #print(minx).
+    
+    peaks=scipy.signal.find_peaks(yax,threshold=3)[0]
+    if len(peaks)==0:
+        return(np.mean(yax))
+    xx=[]
+    for i in peaks:
+            xx.append(yax[i])
+        
+    idscore=np.sum(xx[:])
+    return idscore

@@ -26,9 +26,11 @@ import pandas as pd
 import tkinter as tk
 import pandas as pd
 import pipelines.pipline_1_testing
+import pipelines.pipeline_2
 import matplotlib.pyplot as plot
 from matplotlib.gridspec import GridSpec
 from functions import elements_functions
+from functions import polymer_funcs
 from tkinter import ttk
 import sv_ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -41,28 +43,37 @@ import os
 class gui():
     def __init__(self):
         self.figsize=[5,5]
+        ID_defaults_data=pd.read_excel("default_ID_polymers.xlsx")
+        self.ID_names=list(ID_defaults_data["Name"].values)
+        self.ID_forms=list(ID_defaults_data["Formula"].values)
         self.make_mainscreen()
         
     def make_mainscreen(self):
         self.mainscreen=tk.Tk()
+        sv_ttk.set_theme("dark")
         self.mainscreen.title("Polymer Playground")
         self.mainscreen.iconbitmap("logo.ico")
         self.mainscreen.resizable(True,True)
         icon=tk.PhotoImage(file="logo.png")
         self.mainscreen.iconphoto(False,icon )
         
-        tabcontrol=ttk.Notebook(self.mainscreen)
-        self.spectratab=ttk.Frame(tabcontrol)
-        tabcontrol.add(self.spectratab,text="Overall_spectra") 
-        self.mmdtab=ttk.Frame(tabcontrol)
-        tabcontrol.add(self.mmdtab,text="MMD")
-        self.mmdprotab=ttk.Frame(tabcontrol)
-        tabcontrol.add(self.mmdprotab,text="MMD projection")
-        tabcontrol.grid(row=2,column=0,rowspan=15,columnspan=15,sticky="NESW")  
+        self.tabcontrol=ttk.Notebook(self.mainscreen)
+        self.spectratab=ttk.Frame(self.tabcontrol)
+        self.tabcontrol.add(self.spectratab,text="Overall_spectra") 
+        self.mmdtab=ttk.Frame(self.tabcontrol)
+        self.tabcontrol.add(self.mmdtab,text="MMD")
+        self.mmdprotab=ttk.Frame(self.tabcontrol)
+        self.tabcontrol.add(self.mmdprotab,text="MMD projection")
+        self.ID_show_tab=ttk.Frame(self.tabcontrol)
+        self.tabcontrol.grid(row=2,column=0,rowspan=15,columnspan=15,sticky="NESW")  
         
         tabcontrol2=ttk.Notebook(self.mainscreen)
         self.fileiotab=ttk.Frame(tabcontrol2)
         tabcontrol2.add(self.fileiotab,text="File IO") 
+        self.idtab=ttk.Frame(tabcontrol2)
+        tabcontrol2.add(self.idtab,text="ID")
+        self.untargettedtab=ttk.Frame(tabcontrol2)
+        tabcontrol2.add(self.untargettedtab,text="Untargetted")
         self.targettab=ttk.Frame(tabcontrol2)
         tabcontrol2.add(self.targettab,text="Targetting")
         self.savetab=ttk.Frame(tabcontrol2)
@@ -95,6 +106,32 @@ class gui():
         # self.outfilepathlabel.grid(row=0,column=3,sticky="NSEW")
         # self.outfilebrowsebutton=ttk.Button(self.fileiotab,text="browse",command=self.infilebrowse).grid(row=0,column=4, sticky="NSEW")
         
+        # setup of ID tab
+        self.IDtv=ttk.Treeview(self.idtab, columns=("Name","Formula"),displaycolumns=[0,1])
+        self.IDtv.grid(row=0,column=0,columnspan=2,rowspan=5,sticky="NSEW")
+        self.IDtv.heading("Name", text="Name")
+        self.IDtv.heading("Formula",text="Formula")
+        self.IDtv.column("#0",width=0)
+        for i in range(len(self.ID_forms)):
+            self.IDtv.insert("","end",str(self.ID_names[i]),values=[self.ID_names[i],self.ID_forms[i]])
+        add_button=ttk.Button(self.idtab,text="add",command=self.add_IDer).grid(row=0,column=3,sticky="NSEW")
+        remove_button=ttk.Button(self.idtab,text="remove",command=self.remove_IDer).grid(row=1,column=3,sticky="NSEW")
+        ID_button=ttk.Button(self.idtab,text="ID",command=self.ID).grid(row=2,column=3,sticky="NSEW")
+        
+        #setup of untargetted tab
+        labelrepeat=ttk.Label(self.untargettedtab,text="Repeat unit").grid(row=0,column=0,sticky="NSEW")
+        self.repeatentry=ttk.Entry(self.untargettedtab)
+        self.repeatentry.grid(row=0,column=1,sticky="NSEW",columnspan=2)
+        labelforms=ttk.Label(self.untargettedtab,text="Elements").grid(row=1,column=0,sticky="NSEW")
+        self.formsentry=ttk.Entry(self.untargettedtab)
+        self.formsentry.grid(row=1,column=1,sticky="NSEW",columnspan=2)
+        labelmins=ttk.Label(self.untargettedtab,text="Min").grid(row=2,column=0,sticky="NSEW")
+        self.minsentry=ttk.Entry(self.untargettedtab)
+        self.minsentry.grid(row=2,column=1,sticky="NSEW",columnspan=2)
+        labelmaxs=ttk.Label(self.untargettedtab,text="Min").grid(row=3,column=0,sticky="NSEW")
+        self.maxsentry=ttk.Entry(self.untargettedtab)
+        self.maxsentry.grid(row=3,column=1,sticky="NSEW",columnspan=2)
+        self.untargettedbutt=ttk.Button(self.untargettedtab,text="Analyse",command=self.untargetted_analysis).grid(row=4,column=0,columnspan=3,sticky="NSEW")
         
         #setup targetting tab
         monomerlabel=ttk.Label(self.targettab,text="repeat unit").grid(row=0,column=0)
@@ -131,15 +168,99 @@ class gui():
         if self.infile[-4:]=="xlsx":
             try:
                 data=pd.read_excel(self.infile)
-                mz=data["m/z"].values
-                intens=data["I"].values
+                self.mz=data["m/z"].values
+                self.intens=data["I"].values
                 self.infilepathlabel.configure(background="olive drab")
             except:
                 self.infilepathlabel.configure(background="red4")
         else:
             self.infilepathlabel.configure(background="red2")
+    
+    def add_IDer(self):
+        def cancel():
+            self.popout.destroy()
+        def add():
+            newname=entryname.get()
+            newform=entryform.get()
+            self.ID_names.append(newname)
+            self.ID_forms.append(newform)
+            self.IDtv.insert("","end",str(newname),values=[newname,newform])
+            sv_ttk.set_theme("dark")
+        self.popout=tk.Tk()
+        self.popout.title("Add ID target")
+        toplabel=ttk.Label(self.popout,text="Add ID target").grid(row=0,column=0,columnspan=2,sticky="NSEW")
+        labelname=ttk.Label(self.popout,text="Name").grid(row=1,column=0,sticky="NSEW")
+        entryname=ttk.Entry(self.popout)
+        entryname.grid(row=1,column=1,sticky="NSEW")
+        labelform=ttk.Label(self.popout,text="Formula").grid(row=2,column=0,sticky="NSEW")
+        entryform=ttk.Entr98y(self.popout)
+        entryform.grid(row=2,column=1,sticky="NSEW")
+        cancelbutt=ttk.Button(self.popout,text="Cancel",command=cancel).grid(row=3,column=0,sticky="NSEW")
+        addbutt=ttk.Button(self.popout,text="Add",command=add).grid(row=3,column=1,sticky="NSEW")
+        sv_ttk.set_theme("dark")
+        self.popout.mainloop()
+    
+    def remove_IDer(self):
+        try:
+            item=str(self.IDtv.focus())
+            idn,idf=[],[]
+            for i in range(len(self.ID_forms)):
+                if self.ID_names[i]!=item:
+                    idn.append(self.ID_names[i])
+                    idf.append(self.ID_forms[i])
+            self.ID_forms=idf
+            self.ID_names=idn
+            self.IDtv.delete(self.IDtv.focus())
+        except:
+            print("error in removal")
+            
+    def ID(self):
+        self.idscores=[]
+        for form in self.ID_forms:
+            form_mass=elements_functions.formula_to_mass(form)
+            self.idscores.append(polymer_funcs.getidscore(self.mz,self.intens,form_mass))
         
+        self.tabcontrol.add(self.ID_show_tab,text="ID results")
+        for widget in self.ID_show_tab.winfo_children():
+            widget.destroy()
+        self.IDfig=Figure(figsize=self.figsize)
+        self.axID=self.IDfig.add_subplot(111)
+        self.axID.bar(self.ID_names,self.idscores)
+        self.axID.tick_params(axis='x', labelrotation=90)
+        self.axID.spines['left'].set_visible(True)
+        self.axID.spines['bottom'].set_visible(True)
+        self.axID.spines['top'].set_visible(False)
+        self.axID.spines['right'].set_visible(False)
+        self.IDcanvas=FigureCanvasTkAgg(self.IDfig,master=self.ID_show_tab)
+        self.IDcanvas.get_tk_widget().pack(fill=tk.BOTH,expand=True)
+        self.IDtoolbar=NavigationToolbar2Tk(self.IDcanvas,self.ID_show_tab)
+        self.IDcanvas.get_tk_widget().pack(fill=tk.BOTH,expand=True)
         
+    def untargetted_analysis(self):
+        repeat_unit=self.repeatentry.get()
+        elements=self.formsentry.get()
+        mins=self.minsentry.get()
+        maxs=self.maxsentry.get()
+        minsarray=mins.split(" ")
+        maxsarray=maxs.split(" ")
+        for i in range(len(maxsarray)):
+            maxsarray[i]=int(maxsarray[i])
+            minsarray[i]=int(minsarray[i])
+        elements=np.transpose(elements_functions.formula_to_array(elements))[0]
+        results=pipelines.pipeline_2.pipeline2(self.infile,  repeat_unit,elements,minsarray,maxsarray,2)
+        #print(results)
+        self.resultstv=ttk.Treeview(self.untargettedtab, columns=("Formula","MMD"),displaycolumns=[0,1])
+        self.resultstv.grid(row=4,column=0,columnspan=3,rowspan=5,sticky="NSEW")
+        self.resultstv.heading("Formula", text="Formula")
+        self.resultstv.heading("MMD",text="MMD")
+        self.resultstv.column("#0",width=0)
+        for i in results:
+            if i !=0:
+                for j in i:
+                    self.resultstv.insert("","end",str(j[1]),values=[j[0],j[1]])
+                                                             
+        
+    
     def analyse(self):
         expected_adducts=self.adentry.get().split(",")
         expected_endgroups=self.egentry.get().split(",")
@@ -147,6 +268,8 @@ class gui():
         charge=int(self.zentry.get())
         mmd,rmmd, spectra, mmdpeaks,assignments=pipelines.pipline_1_testing.pipeline1(self.infile,expected_endgroups,expected_adducts,repeat_unit,charge)
         self.assignments=assignments
+        if len(self.assignments)==0:
+            ttk.ok("no peaks found",title="error")
         slabels, smasses,sints=sort_by_labels(assignments, expected_adducts, expected_endgroups)#print(assignments)
         mmdpeaksx,mmdpeaksy=line_up_mmd_peaks(mmd[0],mmd[1],smasses, repeat_unit)
         size=1
@@ -235,6 +358,7 @@ class gui():
         self.mmdprocanvas.get_tk_widget().pack(fill=tk.BOTH,expand=True)
         self.mmdprotoolbar=NavigationToolbar2Tk(self.mmdprocanvas,self.mmdprotab)
         self.mmdprocanvas.get_tk_widget().pack(fill=tk.BOTH,expand=True)
+    
     def save_assingments(self):
         outfile=tk.filedialog.asksaveasfilename()
         os.mkdir(outfile)
