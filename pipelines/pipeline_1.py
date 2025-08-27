@@ -25,7 +25,6 @@ from pyximport import install; install()
 from functions import fileio
 from functions import polymer_funcs
 from functions import elements_functions
-from functions import acuratemass
 import itertools
 
 import itertools

@@ -40,6 +40,8 @@ import time
 from matplotlib.figure import Figure
 import os
 
+
+
 class gui():
     def __init__(self):
         self.figsize=[5,5]
@@ -50,7 +52,6 @@ class gui():
         
     def make_mainscreen(self):
         self.mainscreen=tk.Tk()
-        sv_ttk.set_theme("dark")
         self.mainscreen.title("Polymer Playground")
         self.mainscreen.iconbitmap("logo.ico")
         self.mainscreen.resizable(True,True)
@@ -186,6 +187,8 @@ class gui():
             self.ID_forms.append(newform)
             self.IDtv.insert("","end",str(newname),values=[newname,newform])
             sv_ttk.set_theme("dark")
+            self.popout.destroy()
+            return
         self.popout=tk.Tk()
         self.popout.title("Add ID target")
         toplabel=ttk.Label(self.popout,text="Add ID target").grid(row=0,column=0,columnspan=2,sticky="NSEW")
@@ -193,7 +196,7 @@ class gui():
         entryname=ttk.Entry(self.popout)
         entryname.grid(row=1,column=1,sticky="NSEW")
         labelform=ttk.Label(self.popout,text="Formula").grid(row=2,column=0,sticky="NSEW")
-        entryform=ttk.Entr98y(self.popout)
+        entryform=ttk.Entry(self.popout)
         entryform.grid(row=2,column=1,sticky="NSEW")
         cancelbutt=ttk.Button(self.popout,text="Cancel",command=cancel).grid(row=3,column=0,sticky="NSEW")
         addbutt=ttk.Button(self.popout,text="Add",command=add).grid(row=3,column=1,sticky="NSEW")
@@ -266,10 +269,10 @@ class gui():
         expected_endgroups=self.egentry.get().split(",")
         repeat_unit=self.monomerentry.get()
         charge=int(self.zentry.get())
-        mmd,rmmd, spectra, mmdpeaks,assignments=pipelines.pipeline_1.pipeline2(self.infile,expected_endgroups,expected_adducts,repeat_unit,charge,1.5)
+        mmd,rmmd, spectra, mmdpeaks,assignments=pipelines.pipeline_1.pipeline2(self.infile,expected_endgroups,expected_adducts,repeat_unit,charge,2)
         self.assignments=assignments
         if len(self.assignments)==0:
-            ttk.ok("no peaks found",title="error")
+            tk.messagebox.showerror(message="no peaks found",title="error")
         slabels, smasses,sints=sort_by_labels(assignments, expected_adducts, expected_endgroups)#print(assignments)
         mmdpeaksx,mmdpeaksy=line_up_mmd_peaks(mmd[0],mmd[1],smasses, repeat_unit)
         size=1
@@ -419,4 +422,6 @@ def make_assignment_table(outfile, assignments):
     data={"label":ass[3],"theoretical mass": ass[2],"charge":ass[5],"observed mass":ass[0],"intensity":ass[1],"mass error":ass[4]}
     df=pd.DataFrame(data)
     df.to_excel(outfile)
+
+
 a=gui()
