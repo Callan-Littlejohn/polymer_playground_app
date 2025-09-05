@@ -35,7 +35,7 @@ import time
 import math
 
 
-def pipeline2(infile,  expected_endgroups,expected_adducts,repeat_unit,maxcharge,maxtol): # targetted pipeline
+def pipeline2(infile,  expected_endgroups,expected_adducts,repeat_unit,maxcharge,maxtol,neg_mode=False): # targetted pipeline
     mz, intens,z = fileio.open_excel(infile,get_charge=True)
     #mz=np.multiply(mz,z)
     #z=np.ones(len(mz))
@@ -63,7 +63,7 @@ def pipeline2(infile,  expected_endgroups,expected_adducts,repeat_unit,maxcharge
         addform=i[2]
         maxn=math.ceil(max(i[4])/elements_functions.formula_to_mass(repeat_unit))
         minn=math.floor(min(i[4])/elements_functions.formula_to_mass(repeat_unit))
-        masslist, labellist,chargesout=polymer_funcs.make_lists_internal(repeat_unit, minn, maxn, addform,"",i[5])
+        masslist, labellist,chargesout=polymer_funcs.make_lists_internal(repeat_unit, minn, maxn, addform,"",i[5],neg_mode)
         #print(masslist,i[5])
         for j in range(len(i[3])):
             closestind=np.argmin(np.abs(np.subtract(masslist,i[3][j])))

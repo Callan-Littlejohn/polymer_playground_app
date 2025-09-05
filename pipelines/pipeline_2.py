@@ -52,7 +52,7 @@ def pipeline2(infile,  repeat_unit,elements,mins,maxs,maxtol): # targetted pipel
     results=[]
     for i in range(len(peaks)):
         #try:
-        if 1==1:   
+        try: 
             tol=(maxtol/1E6)*np.mean(mip[i])
             #t0=time.time()
             #form=acuratemass.accuratemass2(i,np.mean(mz))
@@ -67,6 +67,8 @@ def pipeline2(infile,  repeat_unit,elements,mins,maxs,maxtol): # targetted pipel
             #print(form,form2)
         # except:
         #     print("not for",i)
+        except:
+            print("not found for",peaks[i])
     #print(np.mean(cyt),np.mean(pyt))
     #plot.stem(peaks,peakintens)
     #for i in range(len(peaks)):
@@ -80,15 +82,20 @@ def findcomp(mass,elements,emin, emax,tol,minmass,refmass):
         mass=mass+refmass
     return 0
 
-def pwp(masses, mmd, peaks, tol):
+def pwp(masses, mmd, peaks, tol,ints=None):
     masses=np.array(masses)
     massinpeaks=[]
+    intsinpeaks=[]
     for i in peaks:
         #print(i)
         inds=np.where(np.abs(np.subtract(mmd,i))<tol)
         #print(inds)
         #print(masses[inds])
         massinpeaks.append(masses[inds])
+        if ints is not None:
+            intsinpeaks.append(ints[inds])
+    if ints is not None:
+        return massinpeaks,intsinpeaks
     return massinpeaks
 def acmasstest(mass,elements,emin, emax,tol):
     melcombos=[]

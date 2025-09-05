@@ -72,13 +72,17 @@ def simulate_polydispersity(monomer,Mw,Mn,endcap):
             n.append(i)
     return peaks,ints,n
 
-def make_lists_internal(monomer, n0,n1, endgroup,adduct,charge):
+def make_lists_internal(monomer, n0,n1, endgroup,adduct,charge,neg_mode=False):
     mm=functions.formula_to_mass(monomer)
     am=functions.formula_to_mass(adduct)
     em=functions.formula_to_mass(endgroup)
+    if neg_mode==True:
+        emass1=0-emass
+    else:
+        emass1=emass
     masses,labels,charges=[],[],[]
     for i in range(n0,n1):
-        m=(i*mm+em+am-(emass*charge))/charge
+        m=(i*mm+em+am-(emass1*charge))/charge
         masses.append(round(m,6))
         labels.append("("+monomer+")"+str(i)+" "+endgroup+" "+adduct+"+")
         charges.append(charge)
